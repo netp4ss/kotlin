@@ -11,4 +11,4 @@ fun test(): Char {
 }
 
 // 3 ISTORE 0
-// 1 LOCALVARIABLE c C L1 L5 0
+// 1 LOCALVARIABLE c C
