@@ -12,8 +12,10 @@ import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.presetName
 import org.jetbrains.kotlin.konan.util.DependencyDirectories
 import org.junit.Assume
+import org.junit.Ignore
 import org.junit.Test
 
+@Ignore
 class NativePlatformLibsIT : BaseGradleIT() {
 
     override val defaultGradleVersion: GradleVersionRequired
