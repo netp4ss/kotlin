@@ -20,6 +20,7 @@ import org.jetbrains.kotlin.fir.symbols.SyntheticSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.*
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.FirResolvedTypeRef
+import org.jetbrains.kotlin.fir.types.contains
 import org.jetbrains.kotlin.load.java.propertyNameByGetMethodName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.util.capitalizeDecapitalize.capitalizeAsciiOnly
@@ -102,7 +103,7 @@ class FirSyntheticPropertiesScope(
                 val parameter = setter.valueParameters.singleOrNull() ?: return
                 if (setter.typeParameters.isNotEmpty() || setter.isStatic) return
                 val parameterType = (parameter.returnTypeRef as? FirResolvedTypeRef)?.type ?: return
-                if (parameterType != getterReturnType) return
+                if (!getterReturnType.contains { it == parameterType }) return
                 matchingSetter = setter
             })
         }
