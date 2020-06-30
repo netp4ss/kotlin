@@ -26,6 +26,8 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.calls.components.isVararg
 import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.types.SimpleType
+import org.jetbrains.kotlin.types.checker.isClassType
 import org.jetbrains.kotlin.util.OperatorNameConventions
 import org.jetbrains.kotlin.util.capitalizeDecapitalize.toLowerCaseAsciiOnly
 
@@ -124,13 +126,23 @@ open class BuiltinSymbolsBase(protected val irBuiltIns: IrBuiltIns, protected va
         Name.identifier("toUInt"),
         NoLookupLocation.FROM_BACKEND
     ).filter { it.containingDeclaration !is BuiltInsPackageFragment && it.extensionReceiverParameter != null }
-        .map { Pair(it.extensionReceiverParameter!!.type, symbolTable.referenceSimpleFunction(it)) }.toMap()
+        .map {
+            Pair(
+                symbolTable.referenceClassifier(it.extensionReceiverParameter!!.type.constructor.declarationDescriptor!!),
+                symbolTable.referenceSimpleFunction(it)
+            )
+        }.toMap()
 
     val toULongByExtensionReceiver = builtInsPackage("kotlin").getContributedFunctions(
         Name.identifier("toULong"),
         NoLookupLocation.FROM_BACKEND
     ).filter { it.containingDeclaration !is BuiltInsPackageFragment && it.extensionReceiverParameter != null }
-        .map { Pair(it.extensionReceiverParameter!!.type, symbolTable.referenceSimpleFunction(it)) }.toMap()
+        .map {
+            Pair(
+                symbolTable.referenceClassifier(it.extensionReceiverParameter!!.type.constructor.declarationDescriptor!!),
+                symbolTable.referenceSimpleFunction(it)
+            )
+        }.toMap()
 
     val any = symbolTable.referenceClass(builtIns.any)
     val unit = symbolTable.referenceClass(builtIns.unit)
