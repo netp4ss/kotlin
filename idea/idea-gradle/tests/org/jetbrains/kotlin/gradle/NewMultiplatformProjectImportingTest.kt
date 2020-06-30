@@ -199,7 +199,7 @@ class NewMultiplatformProjectImportingTest : MultiplePluginVersionGradleImportin
                 moduleDependency("lib_commonMain", DependencyScope.COMPILE)
                 sourceFolder("lib/src/jvmMain/kotlin", JavaSourceRootType.SOURCE)
                 sourceFolder("lib/src/jvmMain/resources", JavaResourceRootType.RESOURCE)
-                outputPath("lib/build/classes/kotlin/jvm/main", true)
+                outputPath("lib/build/classes/kotlin/jvm/main", true) // todo!!
             }
             module("lib_jvmTest") {
                 platform(JvmPlatforms.jvm16)
