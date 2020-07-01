@@ -27,8 +27,10 @@ import org.jetbrains.kotlin.ir.descriptors.IrBuiltIns
 import org.jetbrains.kotlin.ir.symbols.IrPropertySymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSymbol
+import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.types.IrDynamicType
 import org.jetbrains.kotlin.ir.types.IrType
+import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.getClass
 import org.jetbrains.kotlin.ir.util.isReal
 import org.jetbrains.kotlin.ir.util.render
@@ -599,11 +601,8 @@ class IrOverridingUtil(
         assert(superValueParameters.size == subValueParameters.size)
 
         superValueParameters.forEachIndexed { index, parameter ->
-            if (!AbstractTypeChecker.equalTypes(
-                    typeCheckerContext as AbstractTypeCheckerContext,
-                    subValueParameters[index].type,
-                    parameter.type
-                )
+            if (parameter.type.classifierOrNull !is IrTypeParameterSymbol &&
+                parameter.type.classifierOrNull != subValueParameters[index].type.classifierOrNull
             ) return incompatible("Value parameter type mismatch")
         }
 
