@@ -19,7 +19,9 @@ package org.jetbrains.kotlin.idea.debugger
 import com.intellij.debugger.SourcePosition
 import com.intellij.debugger.engine.DebugProcess
 import com.intellij.debugger.engine.DebuggerUtils
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import com.sun.jdi.AbsentInformationException
 import com.sun.jdi.ObjectCollectedException
@@ -47,7 +49,7 @@ import org.jetbrains.org.objectweb.asm.Type
 import java.util.*
 
 class DebuggerClassNameProvider(
-    private val debugProcess: DebugProcess,
+    val project: Project, val searchScope: GlobalSearchScope,
     val findInlineUseSites: Boolean = true,
     val alwaysReturnLambdaParentClass: Boolean = true
 ) {
@@ -78,17 +80,17 @@ class DebuggerClassNameProvider(
         }
     }
 
-    private val inlineUsagesSearcher = InlineCallableUsagesSearcher(debugProcess)
+    private val inlineUsagesSearcher = InlineCallableUsagesSearcher(project, searchScope)
 
     /**
      * Returns classes in which the given line number *is* present.
      */
     fun getClassesForPosition(position: SourcePosition): List<ReferenceType> = with(debugProcess) {
         val lineNumber = runReadAction { position.line }
-
-        return doGetClassesForPosition(position)
+        val classesForPosition = doGetClassesForPosition(position)
             .flatMap { className -> virtualMachineProxy.classesByName(className) }
-            .flatMap { referenceType -> findTargetClasses(referenceType, lineNumber) }
+        val list = classesForPosition.flatMap { referenceType -> findTargetClasses(referenceType, lineNumber) }
+        return list
     }
 
     /**

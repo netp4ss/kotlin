@@ -265,7 +265,9 @@ class KotlinPositionManager(private val myDebugProcess: DebugProcess) : MultiReq
         val psiFile = sourcePosition.file
         if (psiFile is KtFile) {
             if (!ProjectRootsUtil.isInProjectOrLibSource(psiFile)) return emptyList()
-            return hopelessAware { DebuggerClassNameProvider(myDebugProcess).getClassesForPosition(sourcePosition) } ?: emptyList()
+            return hopelessAware {
+                DebuggerClassNameProvider(myDebugProcess.project, myDebugProcess.searchScope).getClassesForPosition(sourcePosition)
+            } ?: emptyList()
         }
 
         if (psiFile is ClsFileImpl) {
@@ -319,7 +321,7 @@ class KotlinPositionManager(private val myDebugProcess: DebugProcess) : MultiReq
         }
 
         return DumbService.getInstance(myDebugProcess.project).runReadActionInSmartMode(Computable {
-            val classNames = DebuggerClassNameProvider(myDebugProcess).getOuterClassNamesForPosition(position)
+            val classNames = DebuggerClassNameProvider(myDebugProcess.project, myDebugProcess.searchScope).getOuterClassNamesForPosition(position)
             classNames.flatMap { name ->
                 listOfNotNull(
                     myDebugProcess.requestsManager.createClassPrepareRequest(requestor, name),
