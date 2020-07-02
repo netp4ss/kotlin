@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.fir.visitors
 
 import org.jetbrains.kotlin.fir.declarations.FirErrorFunction
+import org.jetbrains.kotlin.fir.declarations.FirScript
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.references.FirErrorNamedReference
 import org.jetbrains.kotlin.fir.references.FirReference
@@ -98,6 +99,10 @@ abstract class FirDefaultTransformer<D> : FirTransformer<D>() {
 
     override fun transformErrorFunction(errorFunction: FirErrorFunction, data: D): CompositeTransformResult<FirStatement> {
         return transformFunction(errorFunction, data)
+    }
+
+    override fun transformScript(script: FirScript, data: D): CompositeTransformResult<FirStatement> {
+        return transformFunction(script, data)
     }
 }
 

@@ -11,10 +11,12 @@ import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.synthetic.FirSyntheticProperty
 import org.jetbrains.kotlin.fir.diagnostics.ConeSimpleDiagnostic
 import org.jetbrains.kotlin.fir.diagnostics.DiagnosticKind
+import org.jetbrains.kotlin.fir.expressions.FirStatement
 import org.jetbrains.kotlin.fir.render
 import org.jetbrains.kotlin.fir.resolve.ResolutionMode
 import org.jetbrains.kotlin.fir.resolve.ScopeSession
 import org.jetbrains.kotlin.fir.resolve.firProvider
+import org.jetbrains.kotlin.fir.resolve.mode
 import org.jetbrains.kotlin.fir.resolve.transformers.*
 import org.jetbrains.kotlin.fir.resolve.transformers.TransformImplicitType
 import org.jetbrains.kotlin.fir.resolve.transformers.contracts.runContractResolveForLocalClass
@@ -127,6 +129,25 @@ private open class FirImplicitAwareBodyResolveTransformer(
         return computeCachedTransformationResult(simpleFunction) {
             super.transformSimpleFunction(simpleFunction, data)
         }
+    }
+
+    override fun transformScript(script: FirScript, data: ResolutionMode): CompositeTransformResult<FirStatement> {
+        script.body?.statements?.forEach { statement ->
+            if (statement is FirCallableDeclaration<*>) {
+                statement.transformReturnTypeRef(this, ResolutionMode.ContextIndependent)
+                statement.transformReceiverTypeRef(this, ResolutionMode.ContextIndependent)
+                if (statement is FirFunction<*>) {
+                    statement.valueParameters.forEach {
+                        it.transformReturnTypeRef(this, ResolutionMode.ContextIndependent)
+                        it.transformVarargTypeToArrayType()
+                    }
+                }
+                if (statement is FirProperty) {
+                    statement.transformStatus(this, statement.resolveStatus(statement.status, null, false).mode())
+                }
+            }
+        }
+        return super.transformScript(script, data)
     }
 
     override fun transformProperty(property: FirProperty, data: ResolutionMode): CompositeTransformResult<FirProperty> {
@@ -305,7 +326,7 @@ private class ImplicitBodyResolveComputationSession {
 
         val returnTypeRef = transformedDeclaration.returnTypeRef
         require(returnTypeRef is FirResolvedTypeRef) {
-            "Not FirResolvedTypeRef (${transformedDeclaration.receiverTypeRef?.render()}) in storeResult for: ${symbol.fir.render()}"
+            "Not FirResolvedTypeRef (${transformedDeclaration.returnTypeRef?.render()}) in storeResult for: ${symbol.fir.render()}"
         }
 
         implicitBodyResolveStatusMap[symbol] = ImplicitBodyResolveComputationStatus.Computed(returnTypeRef, transformedDeclaration)
