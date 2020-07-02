@@ -36,9 +36,6 @@ class ControlFlowGraphBuilder {
     val lastNode: CFGNode<*>
         get() = lastNodes.top()
 
-    val lastNodeOrNull: CFGNode<*>?
-        get() = lastNodes.topOrNull()
-
     var levelCounter: Int = 0
         private set
 
@@ -163,7 +160,7 @@ class ControlFlowGraphBuilder {
         )
 
         val previousNode = enterToLocalClassesMembers[function.symbol]
-            ?: (function as? FirSimpleFunction)?.takeIf { it.isLocal }?.let { lastNodeOrNull }
+            ?: (function as? FirSimpleFunction)?.takeIf { it.isLocal }?.let { lastNode }
 
         val enterNode = createFunctionEnterNode(function).also {
             lastNodes.push(it)
@@ -1046,11 +1043,9 @@ class ControlFlowGraphBuilder {
         node: CFGNode<*>,
         isDead: Boolean = false,
         preferredKind: EdgeKind = EdgeKind.Forward
-    ): CFGNode<*>? {
-        val lastNode = lastNodes.popOrNull()
-        if (lastNode != null) {
-            addEdge(lastNode, node, isDead = isDead, preferredKind = preferredKind)
-        }
+    ): CFGNode<*> {
+        val lastNode = lastNodes.pop()
+        addEdge(lastNode, node, isDead = isDead, preferredKind = preferredKind)
         lastNodes.push(node)
         return lastNode
     }
